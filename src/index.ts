@@ -1,4 +1,4 @@
-import {Socket} from "net"
+import {Server, Socket} from "net"
 import EventEmitter from "events"
 
 export default class SocketBuffer extends EventEmitter {
@@ -11,27 +11,53 @@ export default class SocketBuffer extends EventEmitter {
         this.socket = socket
         this.buffer = Buffer.alloc(0)
 
-        const self = this
-
-        socket.on('data', (data: Buffer) => {
-            self.buffer = Buffer.concat([self.buffer, data])
-            // console.log('SocketHandler get data', data.toString('hex'), self.buffer.length)
-            self.emit('data')
-        })
+        socket.on('data', this.handleData.bind(this))
+        socket.on('error', this.handleError.bind(this))
     }
 
-    async read(length: number): Promise<Buffer> {
+    async read(length: number, timeout?: number): Promise<Buffer> {
         while (length > this.buffer.length) {
-            await this.any()
+            await this.any(timeout)
         }
 
         return this.cut(length)
     }
 
-    any(): Promise<void> {
-        return new Promise((resolve) => {
-            this.once('data', resolve)
+    any(timeout?: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const timer = !timeout ? null : setTimeout(() => {
+                clear()
+                reject(new Error('Timeout waiting for data'))
+            }, timeout)
+
+            const onData = () => {
+                clear()
+                resolve()
+            }
+
+            const onError = (err: Error) => {
+                clear()
+                reject(err)
+            }
+
+            const clear = () => {
+                if(timer) clearTimeout(timer)
+                this.off('error', onError)
+                this.off('data', onData)
+            }
+
+            this.once('data', onData)
+            this.once('error', onError)
         })
+    }
+
+    private handleData(data: Buffer): void {
+        this.buffer = Buffer.concat([this.buffer, data])
+        this.emit('data')
+    }
+
+    private handleError(error: Error): void {
+        this.emit('error', error)
     }
 
     private cut(length: number): Buffer {
