@@ -2,6 +2,13 @@
   "name": "socket-buffer",
   "version": "0.0.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Enhed/socket-buffer"
+  },
+  "bugs": {
+    "url": "https://github.com/Enhed/socket-buffer/issues"
+  },
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
