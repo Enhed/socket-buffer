@@ -1,4 +1,4 @@
-import {Server, Socket} from "net"
+import {Socket} from "net"
 import EventEmitter from "events"
 
 export default class SocketBuffer extends EventEmitter {
@@ -21,6 +21,22 @@ export default class SocketBuffer extends EventEmitter {
         }
 
         return this.cut(length)
+    }
+
+    async until(value: number | number[], include: boolean = true, timeout?: number): Promise<Buffer> {
+        const values = Buffer.from(Array.isArray(value) ? value : [value])
+        let result = Buffer.alloc(0)
+
+        while(true) {
+            const byte = await this.read(1, timeout)
+            result = Buffer.concat([result, byte])
+            const offset = result.length - values.length
+
+            if(result.length < values.length ||
+                Buffer.compare(result.subarray(offset), values) !== 0) continue
+
+            return include ? result : result.subarray(0, offset)
+        }
     }
 
     any(timeout?: number): Promise<void> {
