@@ -20,7 +20,7 @@ describe('timeouts', () => {
             mockSocket.emit('data', data)
         }, 100)
 
-        expect(socketBuffer.read(1, 50)).rejects.toThrow();
+        expect(socketBuffer.read(1, 50)).rejects.toThrow(/timeout/i);
     })
 
     it('shouldn\'t throw an error by timeout', async () => {
