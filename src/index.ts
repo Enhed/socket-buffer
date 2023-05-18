@@ -26,8 +26,9 @@ export default class SocketBuffer extends EventEmitter {
     async until(value: number | number[], include: boolean = true, timeout?: number): Promise<Buffer> {
         const values = Buffer.from(Array.isArray(value) ? value : [value])
         let result = Buffer.alloc(0)
+        const startTime = Date.now()
 
-        while(true) {
+        while(!timeout || Date.now() - startTime > timeout) {
             const byte = await this.read(1, timeout)
             result = Buffer.concat([result, byte])
             const offset = result.length - values.length
@@ -37,6 +38,8 @@ export default class SocketBuffer extends EventEmitter {
 
             return include ? result : result.subarray(0, offset)
         }
+
+        throw new Error('Timeout error')
     }
 
     any(timeout?: number): Promise<void> {
