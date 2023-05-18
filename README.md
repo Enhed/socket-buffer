@@ -39,4 +39,3 @@ Emitted whenever new data is received on the socket.
 ### Event: 'error'
 
 Emitted whenever an error occurs on the socket.
-```
