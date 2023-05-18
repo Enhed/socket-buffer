@@ -23,11 +23,12 @@ describe('timeouts', () => {
         expect(socketBuffer.read(1, 50)).rejects.toThrow();
     })
 
-    it('shouldn\'t throw an error by timeout', () => {
+    it('shouldn\'t throw an error by timeout', async () => {
         setTimeout(() => {
             mockSocket.emit('data', data)
         }, 50)
 
-        expect(socketBuffer.read(1, 100)).rejects.toThrow()
+        const result = await socketBuffer.read(1, 100)
+        expect(result[0]).toEqual(data[0])
     })
 })
