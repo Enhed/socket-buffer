@@ -42,7 +42,9 @@ export default class SocketBuffer extends EventEmitter {
         throw new Error('Timeout error')
     }
 
-    any(timeout?: number): Promise<void> {
+    any(timeout?: number, ignoreBuffer: boolean = false): Promise<void> {
+        if(!ignoreBuffer && this.buffer.length > 0) return Promise.resolve()
+
         return new Promise((resolve, reject) => {
             const timer = !timeout ? null : setTimeout(() => {
                 clear()
