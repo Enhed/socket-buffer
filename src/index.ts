@@ -56,19 +56,26 @@ export default class SocketBuffer extends EventEmitter {
                 resolve()
             }
 
-            const onError = (err: Error) => {
+            const onError = (err?: Error) => {
                 clear()
                 reject(err)
+            }
+
+            const onClose = (hadError: boolean) => {
+                clear()
+                reject(new Error(`Socket closed. Had error: ${hadError}`))
             }
 
             const clear = () => {
                 if(timer) clearTimeout(timer)
                 this.off('error', onError)
                 this.off('data', onData)
+                this.socket.off('close', onClose)
             }
 
             this.once('data', onData)
             this.once('error', onError)
+            this.socket.once('close', onClose)
         })
     }
 
